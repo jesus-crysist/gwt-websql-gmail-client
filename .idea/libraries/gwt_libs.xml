@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="gwt-libs">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-api-checker.jar!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-benchmark-viewer.war!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-dev.jar!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-servlet-deps.jar!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-servlet.jar!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-user.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-dev.jar!/" />
+      <root url="jar://$USER_HOME$/Apps/gwt-2.1.0/gwt-user.jar!/" />
+    </SOURCES>
+  </library>
+</component>

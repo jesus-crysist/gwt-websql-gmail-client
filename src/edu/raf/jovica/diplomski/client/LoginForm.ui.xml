@@ -1,0 +1,57 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+    <ui:style>
+
+        .error {
+            color: #FF1111;
+            text-align: center;
+            width: 100%;
+        }
+
+        .field {
+            display: block;
+        }
+
+        .label {
+            width: 100px;
+        }
+
+        .form-button {
+            width: 130px;
+            margin: 5px;
+        }
+
+    </ui:style>
+
+    <g:VerticalPanel ui:field="loginForm" horizontalAlignment="ALIGN_RIGHT">
+
+        <g:HorizontalPanel styleName="{style.field}">
+
+            <g:Label styleName="{style.label}">Username:</g:Label>
+
+            <g:TextBox ui:field="username" name="username"></g:TextBox>
+
+        </g:HorizontalPanel>
+
+        <g:HorizontalPanel styleName="{style.field}">
+
+            <g:Label styleName="{style.label}">Password:</g:Label>
+
+            <g:PasswordTextBox ui:field="password" name="password"></g:PasswordTextBox>
+
+        </g:HorizontalPanel>
+
+        <g:Label ui:field="messageLabel" styleName="{style.error}"></g:Label>
+
+        <g:HorizontalPanel styleName="{style.field}">
+
+            <g:Button ui:field="loginButton" styleName="gwt-Button {style.form-button}" text="Login"></g:Button>
+
+            <g:Button ui:field="offlineButton" styleName="gwt-Button {style.form-button}" text="Go offline"></g:Button>
+
+        </g:HorizontalPanel>
+
+    </g:VerticalPanel>
+
+</ui:UiBinder>

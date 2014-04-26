@@ -1,0 +1,53 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+    <ui:style>
+
+        .border {
+            border-bottom: 1px dashed gray;
+            margin-bottom: 10px;
+        }
+
+    </ui:style>
+
+    <g:DockLayoutPanel ui:field="mainPanel" unit="PX">
+
+        <g:north size="80">
+
+            <g:DockLayoutPanel styleName="{style.border}">
+                
+                <g:west size="350">
+                    
+                    <g:Image url="images/raf-logo.jpg"></g:Image>
+                    
+                </g:west>
+                
+                <g:east size="350">
+
+                    <g:VerticalPanel horizontalAlignment="ALIGN_RIGHT">
+
+                        <g:Label ui:field="usernameLabel">You are not logged in yet.</g:Label>
+
+                        <g:Button ui:field="logoutButton">Log out</g:Button>
+
+                    </g:VerticalPanel>
+
+                </g:east>
+
+                <g:center>
+
+                    <g:HorizontalPanel horizontalAlignment="ALIGN_CENTER" width="100%">
+
+                        <g:Label ui:field="errorLabel"></g:Label>
+
+                    </g:HorizontalPanel>
+
+                </g:center>
+                
+            </g:DockLayoutPanel>
+
+        </g:north>
+
+    </g:DockLayoutPanel>
+
+</ui:UiBinder>

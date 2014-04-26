@@ -1,0 +1,43 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:dipl='urn:import:edu.raf.jovica.diplomski.client'>
+
+    <ui:style>
+
+        .right-panel {
+            border-right: 1px dashed gray;
+            margin-right: 15px;
+        }
+
+        .top-panel {
+            border-bottom: 1px dashed gray;
+            margin-bottom: 10px;
+        }
+
+    </ui:style>
+
+    <g:DockLayoutPanel>
+
+        <g:west size="200">
+
+            <dipl:FolderList ui:field="folders" styleName="{style.right-panel}" />
+
+        </g:west>
+
+        <g:north size="200">
+
+            <dipl:MessageList ui:field="messageList" styleName="{style.top-panel}" ></dipl:MessageList>
+
+        </g:north>
+
+        <g:center>
+
+            <dipl:MessageDetails ui:field="messageDetails"></dipl:MessageDetails>
+
+        </g:center>
+
+
+
+    </g:DockLayoutPanel>
+
+</ui:UiBinder>
