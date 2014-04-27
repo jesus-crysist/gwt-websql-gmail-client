@@ -27,7 +27,7 @@ public interface LocalSQL extends DataService {
     void createFolderTable(VoidCallback callback);
 
     @Update(sql="INSERT INTO folder (name, path, newCount, unreadCount, totalCount, parent) " +
-            "VALUES ({_.getName()}, {_.getPath()}, {_.getNewMessagesCount()}, {_.getUreadMessageCount()}" +
+            "VALUES ({_.getName()}, {_.getPath()}, {_.getNewMessagesCount()}, {_.getUnreadMessageCount()}" +
             ", {_.getTotalMessagesCount()}, {_.hasParent()})", foreach="folders")
     void insertFolders(Collection<Folder> folders, RowIdListCallback callback);
 
@@ -37,8 +37,8 @@ public interface LocalSQL extends DataService {
     @Select(sql="SELECT * FROM folder WHERE path IN({folderPaths})")
     void getFoldersByPaths(List<String> folderPaths, ListCallback<GenericRow> callback);
 
-    @Update(sql="UPDATE folder SET newCount={_.getNewMessagesCount()},unreadCount={_.getUreadMessageCount()}, " +
-            "totalCount={_.getTotalMessagesCount()}", foreach="folders")
+    @Update(sql="UPDATE folder SET newCount={_.getNewMessagesCount()},unreadCount={_.getUnreadMessageCount()}, " +
+            "totalCount={_.getTotalMessagesCount()} WHERE path=\"{_.getPath()}\"", foreach="folders")
     void updateFolderCounts(Collection<Folder> folders, RowIdListCallback callback);
 
     @Update("DROP TABLE message")
@@ -50,8 +50,8 @@ public interface LocalSQL extends DataService {
             + "subject VARCHAR(1023), "
             + "sender VARCHAR(1023), "
             + "recipients VARCHAR(10230), "
-            + "sentDate DATETIME, "
-            + "receivedDate DATETIME, "
+            + "sentDate INTEGER, "
+            + "receivedDate INTEGER, "
             + "path VARCHAR(1023), "
             + "body TEXT, "
             + "isRead TINYINT(1) )")
@@ -70,4 +70,7 @@ public interface LocalSQL extends DataService {
 
     @Update(sql="UPDATE message SET \"isRead\"={_.isRead()}", foreach="messages")
     void updateMessagesReadFlag(Collection<Message> messages, RowIdListCallback callback);
+
+    @Select(sql="SELECT * FROM message WHERE msgId BETWEEN {startIndex} AND {lastIndex} ORDER BY path")
+    void loadMessages(int startIndex, int lastIndex, ListCallback<GenericRow> callback);
 }

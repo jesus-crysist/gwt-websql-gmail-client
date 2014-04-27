@@ -62,6 +62,19 @@ public class MessageList extends ResizeComposite {
         this.parent = parent;
     }
 
+    public void reset() {
+        // reset
+        table.clear(true);
+
+        if (selectedRow != -1) {
+            styleRow(selectedRow, false);
+        }
+
+        if (currentMessages != null) {
+            currentMessages.clear();
+        }
+    }
+
     /**
      * Initializes the table so that it contains enough rows for a full page of
      * emails. Also creates the images that will be used as 'read' flags.
@@ -89,11 +102,8 @@ public class MessageList extends ResizeComposite {
 
     private void updateTable(final ArrayList<Message> messages) {
 
-        table.clear(true);
-
         final ArrayList<Integer> messageIds = new ArrayList<Integer>();
         Iterator<Message> iterator = messages.iterator();
-        int i = 0;
 
         while (iterator.hasNext()) {
             Message m = iterator.next();
@@ -150,23 +160,23 @@ public class MessageList extends ResizeComposite {
                             }
                         });
                     }
+                }
 
-                    if (messagesToAdd.size() > 0) {
-                        Diplomski.getDatabase().insertMessages(messagesToAdd, new RowIdListCallback() {
-                            @Override
-                            public void onSuccess(List<Integer> rowIds) {
-                                Diplomski.displayError(rowIds.size() + " messages successfuly written to the database!");
+                if (messagesToAdd.size() > 0) {
+                    Diplomski.getDatabase().insertMessages(messagesToAdd, new RowIdListCallback() {
+                        @Override
+                        public void onSuccess(List<Integer> rowIds) {
+                            Diplomski.displayError(rowIds.size() + " messages successfuly written to the database!");
 
-                                renderTable(messages);
-                            }
+                            renderTable();
+                        }
 
-                            @Override
-                            public void onFailure(DataServiceException error) {
-                            }
-                        });
-                    } else {
-                        renderTable(messages);
-                    }
+                        @Override
+                        public void onFailure(DataServiceException error) {
+                        }
+                    });
+                } else {
+                    renderTable();
                 }
             }
 
@@ -177,18 +187,17 @@ public class MessageList extends ResizeComposite {
         });
     }
 
-    private void renderTable(ArrayList<Message> messages) {
+    private void renderTable() {
 
+        ArrayList<Message> messages = currentMessages;
         int i = 0;
-        Iterator<Message> iterator = messages.iterator();
 
-        if (iterator.hasNext()) {
-            Message msg = iterator.next();
+        for (final Message msg  : messages) {
 
             // Add a new row to the table, then set each of its columns to the
             // email's sender and subject values.
             table.setText(i, 0, msg.getSender());
-            table.setText(i, 1, msg.getReceivedDate().toString());
+            table.setText(i, 1, Long.toString(msg.getReceivedDate()) );
             table.setText(i, 2, msg.getSubject());
 
             Element rowElement = table.getRowFormatter().getElement(i);
@@ -200,10 +209,6 @@ public class MessageList extends ResizeComposite {
             rowElement.setAttribute("data-id", String.valueOf(msg.getId()));
 
             i++;
-        }
-
-        if (selectedRow == -1) {
-//                selectRow(0);
         }
     }
 
@@ -236,7 +241,6 @@ public class MessageList extends ResizeComposite {
         styleRow(selectedRow, false);
         styleRow(row, true);
 
-        // item.read = true;
         selectedRow = row;
 
         parent.messageDetails.loadMessage(parent.getMode(), selectedMessage);
@@ -277,17 +281,17 @@ public class MessageList extends ResizeComposite {
         startIndex = f.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT;
         int lastIndex = startIndex + VISIBLE_EMAIL_COUNT;
 
+        reset();
+
         if (mode.equals(Diplomski.ONLINE_MODE)) {
 
             Diplomski.gmailService.getMessagesForPath(parent.getUsername(), f.getPath(),
                     startIndex, lastIndex, messageListCallback);
         } else {
-            Diplomski.log("load from DB");
-//            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, messagesFromDBCallback);
+            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, messagesFromDBCallback);
         }
 
     }
-
 
     AsyncCallback< ArrayList<Message> > messageListCallback = new AsyncCallback<ArrayList<Message>>() {
 
@@ -302,6 +306,36 @@ public class MessageList extends ResizeComposite {
         @Override
         public void onFailure(Throwable caught) {
             Diplomski.displayError(caught.getMessage());
+            parent.logOut();
+        }
+    };
+
+    ListCallback<GenericRow> messagesFromDBCallback = new ListCallback<GenericRow>() {
+        @Override
+        public void onSuccess(List<GenericRow> result) {
+
+            for (final GenericRow row : result) {
+
+                Message m = new Message((long) row.getInt("id"));
+                m.setMessageNumber(row.getInt("msgId"));
+                m.setSubject(row.getString("subject"));
+                m.setSender(row.getString("sender"));
+                m.setRecipientsAsString(row.getString("recipients"));
+                m.setSentDate(row.getInt("sentDate"));
+                m.setReceivedDate(row.getInt("receivedDate"));
+                m.setPath(row.getString("path"));
+                m.setRead(row.getBoolean("isRead"));
+                m.setBody(row.getString("body"));
+
+                currentMessages.add(m);
+            }
+
+            renderTable();
+        }
+
+        @Override
+        public void onFailure(DataServiceException error) {
+            Diplomski.displayError(error.getMessage());
             parent.logOut();
         }
     };

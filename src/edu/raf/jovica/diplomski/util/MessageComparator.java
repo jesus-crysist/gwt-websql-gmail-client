@@ -18,7 +18,7 @@ import java.util.function.ToLongFunction;
 public class MessageComparator implements Comparator<Message> {
     @Override
     public int compare(Message m1, Message m2) {
-        return (int) (m2.getReceivedDate().getTime() - m1.getReceivedDate().getTime());
+        return (int) (m2.getReceivedDate() - m1.getReceivedDate());
     }
 
     @Override

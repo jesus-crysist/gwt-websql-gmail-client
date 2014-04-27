@@ -48,7 +48,14 @@ public class Webmail extends Composite {
         folders.refresh(this.mode);
     }
 
+    public void reset() {
+        folders.reset();
+        messageList.reset();
+//        messageDetails.reset();
+    }
+
     public void logOut() {
+        reset();
         this.mode = Diplomski.OFFLINE_MODE;
         main.logOut();
     }

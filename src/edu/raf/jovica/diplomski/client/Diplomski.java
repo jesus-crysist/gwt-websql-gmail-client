@@ -144,6 +144,7 @@ public class Diplomski implements EntryPoint {
 
                 @Override
                 public void onSuccess(String result) {
+                    appPanel.reset();
                     mainPanel.add(loginForm);
                     usernameLabel.setText("You are not logged in yet.");
                     logoutButton.setVisible(false);

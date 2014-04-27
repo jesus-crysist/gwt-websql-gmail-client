@@ -1,8 +1,10 @@
 package edu.raf.jovica.diplomski.client.data;
 
+import com.google.code.gwt.database.client.util.StringUtils;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -75,36 +77,39 @@ public class Message implements IsSerializable {
     }
 
     public String getRecipientsAsSingleString() {
-
-        String single = "";
-
-        Iterator<String> iterator = recipients.iterator();
-
-        while(iterator.hasNext()) {
-            single += iterator.next();
-        }
-
-        return single;
+        return StringUtils.join(recipients, ",");
     }
 
     public void setRecipients(ArrayList<String> recipients) {
         this.recipients = recipients;
     }
 
+    public void setRecipientsAsString(String recipients) {
+        this.recipients = new ArrayList<String>( Arrays.asList(recipients.split(",") ));
+    }
+
     public void addRecipient(String recipient) {
         this.recipients.add(recipient);
     }
 
-    public Date getSentDate() {
-        return sentDate;
+    public int getSentDate() {
+        return (int) (sentDate.getTime() / 1000L);
     }
 
-    public void setSentDate(Date sendDate) {
-        this.sentDate = sendDate;
+    public void setSentDate(int sentDate) {
+        this.sentDate = new Date(sentDate * 1000L);
     }
 
-    public Date getReceivedDate() {
-        return receivedDate;
+    public void setSentDate(Date sentDate) {
+        this.sentDate = sentDate;
+    }
+
+    public int getReceivedDate() {
+        return (int) (receivedDate.getTime() / 1000L);
+    }
+
+    public void setReceivedDate(int receivedDate) {
+        this.receivedDate = new Date(receivedDate * 1000L);
     }
 
     public void setReceivedDate(Date receivedDate) {

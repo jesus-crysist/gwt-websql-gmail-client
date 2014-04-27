@@ -57,7 +57,7 @@ public final class Folder implements IsSerializable {
         this.newMessagesCount = newMessagesCount;
     }
 
-    public int getUreadMessageCount() {
+    public int getUnreadMessageCount() {
         return unreadMessagesCount;
     }
 

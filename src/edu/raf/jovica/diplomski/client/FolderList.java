@@ -54,17 +54,19 @@ public class FolderList extends Composite {
 
         rootFolder.setHTML(parent.getUsername() + "@gmail.com");
 
-        rootFolder.removeItems();
+        reset();
 
         folderTree.addSelectionHandler(treeItemSelectionHandler);
 
         if (mode.equals(Diplomski.ONLINE_MODE)) {
             Diplomski.gmailService.getFolderList(parent.getUsername(), "", folderListCallback);
         } else {
-
             Diplomski.getDatabase().loadAllFolders(foldersFromDBCallback);
-
         }
+    }
+
+    public void reset() {
+        rootFolder.removeItems();
     }
 
     private void loadingFolders() {
@@ -109,7 +111,7 @@ public class FolderList extends Composite {
             folder = iterator.next();
 
             String name = folder.getName();
-            int count = folder.getUreadMessageCount();
+            int count = folder.getUnreadMessageCount();
 
             TreeItem node = new TreeItem( (count > 0 ? name + "(" + count + ")" : name) );
             Element nodeElement = node.getElement();
@@ -166,20 +168,23 @@ public class FolderList extends Composite {
                     foldersToAdd = folders;
                 } else {
 
-                    Iterator<Folder> folderIterator = folders.iterator();
-                    Iterator<GenericRow> rowIterator = result.iterator();
-                    Folder f;
-                    GenericRow row;
+//                    Iterator<Folder> folderIterator = folders.iterator();
+//                    Iterator<GenericRow> rowIterator = result.iterator();
+//                    Folder f;
+//                    GenericRow row;
                     boolean toAdd = true;
 
-                    while (folderIterator.hasNext()) {
-                        f = folderIterator.next();
+                    for (final Folder f : folders) {
 
-                        while (rowIterator.hasNext()) {
-                            row = rowIterator.next();
+                        for (final GenericRow row : result) {
 
-                            if (f.getPath() == row.getString("path")) {
-                                foldersToUpdate.add(f);
+                            if (f.getPath().equals( row.getString("path") )) {
+
+                                if ( f.getTotalMessagesCount() != row.getInt("totalCount") ||
+                                        f.getUnreadMessageCount() != row.getInt("unreadCount") ||
+                                        f.getNewMessagesCount() != row.getInt("newCount") ) {
+                                    foldersToUpdate.add(f);
+                                }
                                 toAdd = false;
                             }
                         }
@@ -190,16 +195,18 @@ public class FolderList extends Composite {
                         }
                     }
 
-                    Diplomski.getDatabase().updateFolderCounts(foldersToUpdate, new RowIdListCallback() {
-                        @Override
-                        public void onSuccess(List<Integer> rowIds) {
-                        }
+                    if (foldersToUpdate.size() > 0) {
+                        Diplomski.getDatabase().updateFolderCounts(foldersToUpdate, new RowIdListCallback() {
+                            @Override
+                            public void onSuccess(List<Integer> rowIds) {
+                            }
 
-                        @Override
-                        public void onFailure(DataServiceException error) {
-                            Diplomski.displayError(error.toString());
-                        }
-                    });
+                            @Override
+                            public void onFailure(DataServiceException error) {
+                                Diplomski.displayError(error.toString());
+                            }
+                        });
+                    }
 
                 }
 
