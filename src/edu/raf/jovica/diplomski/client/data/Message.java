@@ -6,7 +6,6 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,6 +16,7 @@ import java.util.Iterator;
  */
 public class Message implements IsSerializable {
 
+    @SuppressWarnings(value="unused")
     protected Message() {}
 
     public Message(long id) {
@@ -44,10 +44,6 @@ public class Message implements IsSerializable {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public int getMessageNumber() {
         return messageNumber;
     }
@@ -72,16 +68,8 @@ public class Message implements IsSerializable {
         this.sender = sender;
     }
 
-    public ArrayList<String> getRecipients() {
-        return recipients;
-    }
-
     public String getRecipientsAsSingleString() {
         return StringUtils.join(recipients, ",");
-    }
-
-    public void setRecipients(ArrayList<String> recipients) {
-        this.recipients = recipients;
     }
 
     public void setRecipientsAsString(String recipients) {
@@ -138,13 +126,5 @@ public class Message implements IsSerializable {
 
     public void setBody(String body) {
         this.body = body;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 }

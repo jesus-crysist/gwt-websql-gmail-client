@@ -1,7 +1,6 @@
 package edu.raf.jovica.diplomski.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -36,10 +35,10 @@ public class Webmail extends Composite {
 
         folders.setParent(this);
         messageList.setParent(this);
-        // TODO: uncomment
-//        messageDetails.setParent(this);
+        messageDetails.setParent(this);
     }
 
+    @SuppressWarnings(value = "unused")
     public Webmail() {
         initWidget(uiBinder.createAndBindUi(this));
     }
@@ -51,7 +50,7 @@ public class Webmail extends Composite {
     public void reset() {
         folders.reset();
         messageList.reset();
-//        messageDetails.reset();
+        messageDetails.reset();
     }
 
     public void logOut() {

@@ -19,15 +19,16 @@ import java.util.ArrayList;
 public interface GmailService extends RemoteService {
 
     public String login(String username, String password);
-    public void logout(String username);
+    public String logout(String username);
     public ArrayList<Folder> getFolderList(String username, String path);
     public ArrayList<Message> getMessagesForPath(String username, String path, int from, int to);
-    public Message getMessageByNumber(String username, Message msg);
+    public Message setMessageReadFlag(String username, Message msg);
 
     /**
      * Utility/Convenience class.
      * Use GmailService.App.getInstance() to access static instance of GmailAsync
      */
+    @SuppressWarnings(value="unused")
     public static class App {
         private static final GmailServiceAsync ourInstance = (GmailServiceAsync) GWT.create(GmailService.class);
 

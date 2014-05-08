@@ -14,8 +14,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,11 +38,9 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         try {
 
-            GmailSSLStore store = null;
-
             Session mailSession = Session.getDefaultInstance(props, null);
 
-            store = (GmailSSLStore) mailSession.getStore("gimaps");
+            GmailSSLStore store = (GmailSSLStore) mailSession.getStore("gimaps");
 
             store.connect(username, password);
 
@@ -53,7 +53,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             System.out.println("EXCEPTION IN LOGIN PAGE: " + ex.getMessage());
             ex.printStackTrace();
 
-            if (ex.getMessage().indexOf("Invalid credentials") != -1) {
+            if (ex.getMessage().contains("Invalid credentials")) {
                 return "Server error:Invalid username or password.";
             } else {
                 return "Server error:" + ex.getMessage();
@@ -63,8 +63,10 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
     }
 
     @Override
-    public void logout(String username) {
+    public String logout(String username) {
         loggedInStores.remove(username);
+
+        return username;
     }
 
     @Override
@@ -111,7 +113,6 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             totalCount = 0;
 
             ArrayList<Folder> list = new ArrayList<Folder>();
-            String parentName = parent.getName();
 
             for(javax.mail.Folder f : subfolders) {
                 list.add ( getFolder(f) );
@@ -143,12 +144,15 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         } catch (MessagingException e) {
             messages.add( new Message( e.getMessage() ) );
+            e.printStackTrace();
+        } catch (IOException e) {
+            messages.add( new Message( e.getMessage() ) );
         }
 
         return messages;
     }
 
-    private ArrayList<Message> getMessages(GmailFolder folder, int from, int to) throws MessagingException {
+    private ArrayList<Message> getMessages(GmailFolder folder, int from, int to) throws MessagingException, IOException {
 
         ArrayList<Message> messages = new ArrayList<Message>();
 
@@ -182,8 +186,8 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             Address[] recipients = gmailMsg.getRecipients(javax.mail.Message.RecipientType.TO);
 
-            for (int i = 0, len = recipients.length; i < len; i++) {
-                msg.addRecipient( recipients[i].toString() );
+            for (Address recipient : recipients) {
+                msg.addRecipient(recipient.toString());
             }
 
             msg.setSentDate(gmailMsg.getSentDate());
@@ -191,6 +195,30 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             msg.setRead(gmailMsg.isSet(Flags.Flag.SEEN));
             msg.setPath(folder.getFullName());
             msg.setMessageNumber(gmailMsg.getMessageNumber());
+
+            // Getting message body
+            StringBuilder sb = new StringBuilder();
+            Multipart multipart;
+            MimePart mimePart;
+            String messageString;
+
+            if ( gmailMsg.getContentType().contains("multipart/") ) {
+                multipart = (MimeMultipart) gmailMsg.getContent();
+
+                messageString = multipartMessageToString(multipart);
+            }
+            else if ( gmailMsg.getContentType().toLowerCase().contains("text/") ) {
+
+                messageString = gmailMsg.getContent().toString();
+            }
+            else {
+                mimePart = (MimeBodyPart) gmailMsg.getContent();
+                messagePartToString(mimePart, sb);
+
+                messageString = sb.toString();
+            }
+
+            msg.setBody(messageString);
 
             messages.add(msg);
         }
@@ -205,7 +233,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
     }
 
     @Override
-    public Message getMessageByNumber(String username, Message msg) {
+    public Message setMessageReadFlag(String username, Message msg) {
 
         try {
 
@@ -217,28 +245,13 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             GmailMessage gmailMsg = (GmailMessage) folder.getMessage(msg.getMessageNumber());
 
-            StringBuilder sb = new StringBuilder();
+            // set SEEN flag on the server by getting it's content
+            gmailMsg.getContent();
 
-            Multipart multipart;
-            MimePart mimePart;
-            String messageString;
-
-            if (gmailMsg.getContentType().contains("multipart/")) {
-                multipart = (MimeMultipart) gmailMsg.getContent();
-
-                messageString = multipartMessageToString(multipart);
-            } else {
-                mimePart = (MimeBodyPart) gmailMsg.getContent();
-                messagePartToString(mimePart, sb);
-
-                messageString = sb.toString();
-            }
-
-            msg.setBody(messageString);
-
-            // set message as seen
+            // set message flag as seen
             gmailMsg.setFlag(Flags.Flag.SEEN, true);
 
+            // set read flag in message object
             msg.setRead( gmailMsg.getFlags().contains(Flags.Flag.SEEN) );
 
             if (folder != null && folder.isOpen()) {
@@ -263,7 +276,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
         int partCount = message.getCount();
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0, len = partCount; i < len; i++) {
+        for (int i = 0; i < partCount; i++) {
             messagePartToString(message.getBodyPart(i), sb);
         }
 
@@ -274,7 +287,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         if (p.isMimeType("text/plain")) {
 
-            if (!p.getContent().toString().equals(null)) {
+            if (p.getContent().toString() != null) {
 
                 sb.append((String)p.getContent());
             }

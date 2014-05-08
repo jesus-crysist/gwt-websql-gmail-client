@@ -3,7 +3,6 @@ package edu.raf.jovica.diplomski.client.data;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 /**
  * User: jovica
@@ -12,6 +11,7 @@ import java.util.Comparator;
  */
 public final class Folder implements IsSerializable {
 
+    @SuppressWarnings(value="unused")
     protected Folder() {}
 
     public Folder(String name) {
@@ -35,10 +35,6 @@ public final class Folder implements IsSerializable {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPath() {
@@ -87,10 +83,6 @@ public final class Folder implements IsSerializable {
 
     public boolean hasChildren() {
         return (children.size() > 0);
-    }
-
-    public int hasParent() {
-        return (path.indexOf('/') != -1 ? 0 : 1);
     }
 
     public String getError() {

@@ -18,10 +18,6 @@ import edu.raf.jovica.diplomski.client.data.LocalSQL;
 import edu.raf.jovica.diplomski.client.rpc.GmailService;
 import edu.raf.jovica.diplomski.client.rpc.GmailServiceAsync;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-
 /**
  * Created with IntelliJ IDEA.
  * User: jovica
@@ -35,7 +31,7 @@ public class Diplomski implements EntryPoint {
 
     public static final String ONLINE_MODE = "online";
     public static final String OFFLINE_MODE = "offline";
-    public static final String serverUrl = "http://localhost:8080";
+
     // (1) Create the client proxy. Note that although you are creating the
     // service interface proper, you cast the result to the asynchronous
     // version of the interface. The cast is always safe because the
@@ -47,7 +43,8 @@ public class Diplomski implements EntryPoint {
     private Webmail appPanel;
     private static LocalSQL database;
 
-    @UiField DockLayoutPanel mainPanel;
+    @UiField(provided = true)
+    DockLayoutPanel mainPanel;
     @UiField static Label errorLabel;
     @UiField Label usernameLabel;
     @UiField Button logoutButton;
@@ -98,6 +95,7 @@ public class Diplomski implements EntryPoint {
     }
 
     @UiHandler("logoutButton")
+    @SuppressWarnings(value="unused")
     public void onLogoutClick(ClickEvent event) {
         logOut();
     }
@@ -106,7 +104,7 @@ public class Diplomski implements EntryPoint {
 
         if (mainPanel.remove(loginForm)) {
 
-            if (username == OFFLINE_MODE) {
+            if (username.equals(OFFLINE_MODE)) {
 
                 usernameLabel.setText("OFF-LINE MODE");
                 logoutButton.setText("Go online");

@@ -38,7 +38,7 @@ public interface LocalSQL extends DataService {
     void getFoldersByPaths(List<String> folderPaths, ListCallback<GenericRow> callback);
 
     @Update(sql="UPDATE folder SET newCount={_.getNewMessagesCount()},unreadCount={_.getUnreadMessageCount()}, " +
-            "totalCount={_.getTotalMessagesCount()} WHERE path=\"{_.getPath()}\"", foreach="folders")
+            "totalCount={_.getTotalMessagesCount()} WHERE path={_.getPath()}", foreach="folders")
     void updateFolderCounts(Collection<Folder> folders, RowIdListCallback callback);
 
     @Update("DROP TABLE message")
@@ -57,20 +57,23 @@ public interface LocalSQL extends DataService {
             + "isRead TINYINT(1) )")
     void createMessageTable(VoidCallback callback);
 
-    @Update(sql="INSERT INTO message (msgId, subject, sender, recipients, sentDate, receivedDate, path, isRead) " +
+    @Update(sql="INSERT INTO message (msgId, subject, sender, recipients, sentDate, receivedDate, path, isRead, body) " +
             "VALUES ({_.getMessageNumber()}, {_.getSubject()}, {_.getSender()}, {_.getRecipientsAsSingleString()}" +
-            ", {_.getSentDate()}, {_.getReceivedDate()}, {_.getPath()}, {_.isRead()})", foreach="messages")
+            ", {_.getSentDate()}, {_.getReceivedDate()}, {_.getPath()}, {_.isRead()}, {_.getBody()})", foreach="messages")
     void insertMessages(Collection<Message> messages, RowIdListCallback callback);
 
-    @Update(sql="UPDATE message SET \"isRead\"={isRead} WHERE msgId={msgId}")
-    void setReadMessage(boolean isRead, int msgId, RowIdListCallback callback);
+    @Update(sql="UPDATE message SET isRead={isRead} WHERE msgId={msgId}")
+    void setReadMessage(boolean isRead, int msgId, ListCallback<GenericRow> callback);
 
     @Select(sql="SELECT * FROM message WHERE msgId IN({messageIds})")
     void getMessagesByIds(List<Integer> messageIds, ListCallback<GenericRow> callback);
 
-    @Update(sql="UPDATE message SET \"isRead\"={_.isRead()}", foreach="messages")
-    void updateMessagesReadFlag(Collection<Message> messages, RowIdListCallback callback);
+    @Update(sql="UPDATE message SET isRead={_.isRead()} WHERE msgId={_.getMessageNumber()}", foreach="messages")
+    void updateMessagesReadFlag(Collection<Message> messages, ListCallback<GenericRow> callback);
 
     @Select(sql="SELECT * FROM message WHERE msgId BETWEEN {startIndex} AND {lastIndex} ORDER BY path")
     void loadMessages(int startIndex, int lastIndex, ListCallback<GenericRow> callback);
+
+    @Select(sql="SELECT * FROM message WHERE msgId={msgId}")
+    void loadSingleMessage(int msgId, ListCallback<GenericRow> callback);
 }

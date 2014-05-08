@@ -18,7 +18,10 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 import edu.raf.jovica.diplomski.client.data.Folder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,7 +37,6 @@ public class FolderList extends Composite {
 
     private Webmail parent;
     private TreeItem rootFolder;
-    private TreeItem inboxItem = null;
     private TreeItem selectedItem;
     private ArrayList<Folder> folderList;
 
@@ -71,27 +73,13 @@ public class FolderList extends Composite {
 
     private void loadingFolders() {
 
-        TreeItem selected;
-
         renderList(folderList, rootFolder);
 
-        if (inboxItem != null) {
-            selected = inboxItem;
-        } else {
-            selected = rootFolder.getChild(0);
+        if (folderList.size() == 0) {
+            rootFolder.addItem("No folders");
+            rootFolder.setState(true);
+            return;
         }
-
-        selected.setSelected(true);
-        selected.setState(true);
-
-        Element el = selected.getElement();
-        el.getFirstChildElement().getStyle().setBackgroundColor("lightblue");
-
-        int index = Integer.parseInt(el.getAttribute("data-index"));
-
-        parent.messageList.refresh(parent.getMode(), folderList.get(index));
-
-        selectedItem = selected;
 
         rootFolder.setState(true);
     }
@@ -126,10 +114,6 @@ public class FolderList extends Composite {
 
             root.addItem(node);
 
-            if (name.toLowerCase().equals("inbox")) {
-                inboxItem = node;
-            }
-
             if (count > 0) {
                 nodeElement.getStyle().setFontWeight(Style.FontWeight.BOLD);
             }
@@ -143,17 +127,13 @@ public class FolderList extends Composite {
     /**
      * Check if some folders already exist. If they do, update their data.
      * If some don't add those folders to the database.
-     * @param folders
+     * @param folders List of folders to update
      */
     private void updateFolderDatabase(final ArrayList<Folder> folders) {
 
         final ArrayList<String> paths = new ArrayList<String>();
 
-        Iterator<Folder> folderIterator = folders.iterator();
-
-        while(folderIterator.hasNext()) {
-            Folder f = folderIterator.next();
-
+        for (Folder f : folders) {
             paths.add(f.getPath());
         }
 
@@ -273,11 +253,19 @@ public class FolderList extends Composite {
 
             item.setState(true);
 
+            if (el.getInnerText().equals("No folders")) {
+                return;
+            }
+
             el.getFirstChildElement().getStyle().setBackgroundColor("lightblue");
 
-            int index = Integer.parseInt(el.getAttribute("data-index"));
+            String indexValueFromAttribute = el.getAttribute("data-index");
 
-            parent.messageList.refresh(parent.getMode(), folderList.get(index));
+            if (indexValueFromAttribute.length() > 0) {
+                int index = Integer.parseInt(indexValueFromAttribute);
+
+                parent.messageList.refresh(parent.getMode(), folderList.get(index));
+            }
 
             selectedItem = item;
 
@@ -303,7 +291,7 @@ public class FolderList extends Composite {
 
                 String path = row.getString("path");
 
-                if (path.indexOf("/") == -1) { // first level folder
+                if (!path.contains("/")) { // first level folder
 
                     foldersMap.put(path, f);
                 } else { // nested path

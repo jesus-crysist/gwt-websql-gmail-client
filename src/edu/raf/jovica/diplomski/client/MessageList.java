@@ -50,7 +50,6 @@ public class MessageList extends ResizeComposite {
     }
 
     protected Webmail parent;
-    private Message selectedMessage;
     private ArrayList<Message> currentMessages;
     private int startIndex, selectedRow = -1;
 
@@ -103,11 +102,8 @@ public class MessageList extends ResizeComposite {
     private void updateTable(final ArrayList<Message> messages) {
 
         final ArrayList<Integer> messageIds = new ArrayList<Integer>();
-        Iterator<Message> iterator = messages.iterator();
 
-        while (iterator.hasNext()) {
-            Message m = iterator.next();
-
+        for (Message m : messages) {
             messageIds.add(m.getMessageNumber());
         }
 
@@ -150,9 +146,9 @@ public class MessageList extends ResizeComposite {
                     }
 
                     if (messagesToUpate.size() > 0) {
-                        Diplomski.getDatabase().updateMessagesReadFlag(messagesToUpate, new RowIdListCallback() {
+                        Diplomski.getDatabase().updateMessagesReadFlag(messagesToUpate, new ListCallback<GenericRow>() {
                             @Override
-                            public void onSuccess(List<Integer> rowIds) {
+                            public void onSuccess(List<GenericRow> rows) {
                             }
 
                             @Override
@@ -220,30 +216,35 @@ public class MessageList extends ResizeComposite {
             return;
         }
 
-        Message selectedMessage = currentMessages.get(row);
+        final Message selectedMessage = currentMessages.get(row);
         if (selectedMessage == null) {
             return;
         }
 
         // mark it in the local database
-        Diplomski.getDatabase().setReadMessage(true, selectedMessage.getMessageNumber(), new RowIdListCallback() {
-            @Override
-            public void onSuccess(List<Integer> rowIds) {
-                Diplomski.displayError("Read flag for selected message successfuly written in local database!");
-            }
+        if (!selectedMessage.isRead()) {
+            Diplomski.getDatabase().setReadMessage(true, selectedMessage.getMessageNumber(), new ListCallback<GenericRow>() {
+                @Override
+                public void onSuccess(List<GenericRow> rowIds) {
+                    Diplomski.displayError("Read flag for selected message successfuly written in local database!");
 
-            @Override
-            public void onFailure(DataServiceException error) {
-                Diplomski.displayError(error.toString());
-            }
-        });
+                    parent.messageDetails.loadMessage(parent.getMode(), selectedMessage);
+
+                }
+
+                @Override
+                public void onFailure(DataServiceException error) {
+                    Diplomski.displayError(error.toString());
+                }
+            });
+        } else {
+            parent.messageDetails.loadMessage(parent.getMode(), selectedMessage);
+        }
 
         styleRow(selectedRow, false);
         styleRow(row, true);
 
         selectedRow = row;
-
-        parent.messageDetails.loadMessage(parent.getMode(), selectedMessage);
     }
 
     private void styleRow(int row, boolean selected) {
@@ -262,7 +263,7 @@ public class MessageList extends ResizeComposite {
 
         Message selectedMessage = currentMessages.get(selectedRow);
 
-        if (selectedMessage.getId() == message.getId()) {
+        if (selectedMessage.getMessageNumber() == message.getMessageNumber()) {
 
             Element rowElement = table.getRowFormatter().getElement(selectedRow);
 

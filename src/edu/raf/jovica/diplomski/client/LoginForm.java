@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.http.client.*;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -84,6 +83,7 @@ public class LoginForm extends Composite {
     }
 
     @UiHandler("offlineButton")
+    @SuppressWarnings(value="unused")
     void onOfflineClick (ClickEvent ev) {
         hideErrorMessage();
 
@@ -95,7 +95,7 @@ public class LoginForm extends Composite {
 
         public void onSuccess(String result) {
 
-            if (result.indexOf("Server error:") == -1) {
+            if (!result.contains("Server error:")) {
                 app.logIn(result.replace("Server error:", ""));
             } else {
                 showErrorMessage(result);

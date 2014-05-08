@@ -1,5 +1,8 @@
 package edu.raf.jovica.diplomski.client;
 
+import com.google.code.gwt.database.client.GenericRow;
+import com.google.code.gwt.database.client.service.DataServiceException;
+import com.google.code.gwt.database.client.service.ListCallback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -9,6 +12,8 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
 import edu.raf.jovica.diplomski.client.data.Message;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -43,9 +48,30 @@ public class MessageDetails extends ResizeComposite {
     public void loadMessage(String mode, Message msg) {
 
         if (mode.equals(Diplomski.ONLINE_MODE)) {
-
-            Diplomski.gmailService.getMessageByNumber(parent.getUsername(), msg, messageDetailsCallback);
+            Diplomski.gmailService.setMessageReadFlag(parent.getUsername(), msg, messageDetailsCallback);
+        } else {
+            Diplomski.getDatabase().loadSingleMessage(msg.getMessageNumber(), messageFromDBCallback);
         }
+    }
+
+    public void reset() {
+        sender.setInnerHTML("");
+        recipients.setInnerHTML("");
+        sentDate.setInnerHTML("");
+        receivedDate.setInnerHTML("");
+        subject.setInnerHTML("");
+        body.setHTML("");
+    }
+
+    private void renderMessage(Message msg) {
+        sender.setInnerHTML(msg.getSender());
+        sentDate.setInnerHTML( Long.toString(msg.getSentDate()) );
+        recipients.setInnerHTML(msg.getRecipientsAsSingleString());
+        receivedDate.setInnerHTML( Long.toString(msg.getReceivedDate()) );
+        subject.setInnerHTML(msg.getSubject());
+        body.setHTML(msg.getBody());
+
+        parent.messageList.readMessage(msg);
     }
 
     AsyncCallback<Message> messageDetailsCallback = new AsyncCallback<Message>() {
@@ -56,15 +82,36 @@ public class MessageDetails extends ResizeComposite {
         }
 
         @Override
-        public void onSuccess(Message result) {
-            sender.setInnerHTML(result.getSender());
-            sentDate.setInnerHTML(result.getSentDate().toString());
-            recipients.setInnerHTML(result.getRecipientsAsSingleString());
-            receivedDate.setInnerHTML(result.getReceivedDate().toString());
-            subject.setInnerHTML(result.getSubject());
-            body.setHTML(result.getBody());
+        public void onSuccess(final Message result) {
+            Diplomski.getDatabase().loadSingleMessage(result.getMessageNumber(), messageFromDBCallback);
+        }
+    };
 
-            parent.messageList.readMessage(result);
+    ListCallback<GenericRow> messageFromDBCallback = new ListCallback<GenericRow>() {
+        @Override
+        public void onSuccess(List<GenericRow> result) {
+
+            GenericRow row = result.get(0);
+
+            Message m = new Message((long) row.getInt("id"));
+            m.setMessageNumber(row.getInt("msgId"));
+            m.setSubject(row.getString("subject"));
+            m.setSender(row.getString("sender"));
+            m.setRecipientsAsString(row.getString("recipients"));
+            m.setSentDate(row.getInt("sentDate"));
+            m.setReceivedDate(row.getInt("receivedDate"));
+            m.setPath(row.getString("path"));
+            m.setRead(row.getBoolean("isRead"));
+
+            m.setBody(row.getString("body"));
+
+            renderMessage(m);
+        }
+
+        @Override
+        public void onFailure(DataServiceException error) {
+            Diplomski.displayError(error.getMessage());
+            parent.logOut();
         }
     };
 }

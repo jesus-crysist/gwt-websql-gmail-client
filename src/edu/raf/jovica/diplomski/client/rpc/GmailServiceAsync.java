@@ -19,5 +19,5 @@ public interface GmailServiceAsync {
     public void logout(String username, AsyncCallback<String> callback);
     public void getFolderList(String username, String path, AsyncCallback<ArrayList<Folder>> async);
     public void getMessagesForPath(String username, String path, int from, int to, AsyncCallback<ArrayList<Message>> async);
-    public void getMessageByNumber(String username, Message msg, AsyncCallback<Message> async);
+    public void setMessageReadFlag(String username, Message msg, AsyncCallback<Message> async);
 }
