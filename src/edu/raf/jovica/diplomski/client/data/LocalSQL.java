@@ -62,18 +62,18 @@ public interface LocalSQL extends DataService {
             ", {_.getSentDate()}, {_.getReceivedDate()}, {_.getPath()}, {_.isRead()}, {_.getBody()})", foreach="messages")
     void insertMessages(Collection<Message> messages, RowIdListCallback callback);
 
-    @Update(sql="UPDATE message SET isRead={isRead} WHERE msgId={msgId}")
-    void setReadMessage(boolean isRead, int msgId, ListCallback<GenericRow> callback);
+    @Update(sql="UPDATE message SET isRead={isRead} WHERE msgId={msgId} AND path={path}")
+    void setReadMessage(boolean isRead, int msgId, String path, ListCallback<GenericRow> callback);
 
     @Select(sql="SELECT * FROM message WHERE msgId IN({messageIds})")
     void getMessagesByIds(List<Integer> messageIds, ListCallback<GenericRow> callback);
 
-    @Update(sql="UPDATE message SET isRead={_.isRead()} WHERE msgId={_.getMessageNumber()}", foreach="messages")
+    @Update(sql="UPDATE message SET isRead={_.isRead()} WHERE msgId={_.getMessageNumber()} AND path={_.getPath()}", foreach="messages")
     void updateMessagesReadFlag(Collection<Message> messages, ListCallback<GenericRow> callback);
 
-    @Select(sql="SELECT * FROM message WHERE msgId BETWEEN {startIndex} AND {lastIndex} ORDER BY path")
-    void loadMessages(int startIndex, int lastIndex, ListCallback<GenericRow> callback);
+    @Select(sql="SELECT * FROM message WHERE msgId BETWEEN {startIndex} AND {lastIndex} AND path={path} ORDER BY path")
+    void loadMessages(int startIndex, int lastIndex, String path, ListCallback<GenericRow> callback);
 
-    @Select(sql="SELECT * FROM message WHERE msgId={msgId}")
-    void loadSingleMessage(int msgId, ListCallback<GenericRow> callback);
+    @Select(sql="SELECT * FROM message WHERE msgId={msgId} AND path={path}")
+    void loadSingleMessage(int msgId, String path, ListCallback<GenericRow> callback);
 }

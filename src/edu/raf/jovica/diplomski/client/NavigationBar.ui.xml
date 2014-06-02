@@ -1,0 +1,23 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+    <ui:style>
+        .list-nav-panel {
+            width: 100%;
+        }
+
+        .link {
+            display: inline-block;
+            cursor: pointer;
+        }
+    </ui:style>
+
+    <g:HorizontalPanel>
+        <g:HTMLPanel ui:field="rootElement" styleName="{style.list-nav-panel}">
+            <g:Hyperlink ui:field="newerButton" styleName="{style.link}">&lt; newer</g:Hyperlink>
+            <g:InlineHTML ui:field="fromToText"></g:InlineHTML> of <g:InlineHTML ui:field="totalText"></g:InlineHTML>
+            <g:Hyperlink ui:field="olderButton" styleName="{style.link}">older &gt;</g:Hyperlink>
+        </g:HTMLPanel>
+    </g:HorizontalPanel>
+
+</ui:UiBinder>

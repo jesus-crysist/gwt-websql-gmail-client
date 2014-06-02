@@ -43,8 +43,7 @@ public class Diplomski implements EntryPoint {
     private Webmail appPanel;
     private static LocalSQL database;
 
-    @UiField(provided = true)
-    DockLayoutPanel mainPanel;
+    @UiField  DockLayoutPanel mainPanel;
     @UiField static Label errorLabel;
     @UiField Label usernameLabel;
     @UiField Button logoutButton;

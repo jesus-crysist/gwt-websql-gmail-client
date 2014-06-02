@@ -85,6 +85,10 @@ public final class Folder implements IsSerializable {
         return (children.size() > 0);
     }
 
+    public int hasParent() {
+        return (path.indexOf('/') != -1 ? 0 : 1);
+    }
+
     public String getError() {
         return error;
     }

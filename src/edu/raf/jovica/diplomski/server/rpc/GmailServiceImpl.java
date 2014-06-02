@@ -140,6 +140,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             GmailFolder folder = (GmailFolder) store.getFolder(path);
 
+            // TODO: from and to are not correct values!!!
             return getMessages(folder, from, to);
 
         } catch (MessagingException e) {

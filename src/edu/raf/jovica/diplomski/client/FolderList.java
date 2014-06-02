@@ -4,6 +4,7 @@ import com.google.code.gwt.database.client.GenericRow;
 import com.google.code.gwt.database.client.service.DataServiceException;
 import com.google.code.gwt.database.client.service.ListCallback;
 import com.google.code.gwt.database.client.service.RowIdListCallback;
+import com.google.code.gwt.database.client.util.StringUtils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -18,10 +19,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 import edu.raf.jovica.diplomski.client.data.Folder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -69,6 +67,13 @@ public class FolderList extends Composite {
 
     public void reset() {
         rootFolder.removeItems();
+    }
+
+    public int getTotalMessageCount() {
+
+        int index = Integer.parseInt(selectedItem.getElement().getAttribute("data-index"));
+
+        return folderList.get(index).getTotalMessagesCount();
     }
 
     private void loadingFolders() {
@@ -216,6 +221,27 @@ public class FolderList extends Composite {
         this.parent = parent;
     }
 
+    public Folder getSelectedFolder() {
+        return folderList.get( Integer.parseInt(selectedItem.getElement().getAttribute("data-index")) );
+    }
+
+    private Folder getFolderFromPath(ArrayList<Folder> folders, String path, int level) {
+
+        String[] pathParts = path.split("/");
+
+        for (Folder f : folders) {
+
+            if (f.getPath().equals(path)) {
+                return f;
+            } else if (f.getName().equals(pathParts[level])) {
+
+                return getFolderFromPath(f.getChildren(), path, ++level);
+            }
+        }
+
+        return null;
+    }
+
     AsyncCallback< ArrayList<Folder> > folderListCallback = new AsyncCallback< ArrayList<Folder> >() {
 
         @Override
@@ -259,16 +285,16 @@ public class FolderList extends Composite {
 
             el.getFirstChildElement().getStyle().setBackgroundColor("lightblue");
 
-            String indexValueFromAttribute = el.getAttribute("data-index");
+            String path = el.getAttribute("data-path");
 
-            if (indexValueFromAttribute.length() > 0) {
-                int index = Integer.parseInt(indexValueFromAttribute);
+            if (path.length() > 0) {
 
-                parent.messageList.refresh(parent.getMode(), folderList.get(index));
+                Folder selectedFolder = getFolderFromPath(folderList, path, 0);
+
+                parent.messageList.refresh(parent.getMode(), selectedFolder);
             }
 
             selectedItem = item;
-
         }
     };
 

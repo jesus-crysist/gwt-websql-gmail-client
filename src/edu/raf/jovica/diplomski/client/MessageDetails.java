@@ -50,7 +50,8 @@ public class MessageDetails extends ResizeComposite {
         if (mode.equals(Diplomski.ONLINE_MODE)) {
             Diplomski.gmailService.setMessageReadFlag(parent.getUsername(), msg, messageDetailsCallback);
         } else {
-            Diplomski.getDatabase().loadSingleMessage(msg.getMessageNumber(), messageFromDBCallback);
+            Diplomski.getDatabase().loadSingleMessage(msg.getMessageNumber(),
+                    msg.getPath(), messageFromDBCallback);
         }
     }
 
@@ -83,7 +84,8 @@ public class MessageDetails extends ResizeComposite {
 
         @Override
         public void onSuccess(final Message result) {
-            Diplomski.getDatabase().loadSingleMessage(result.getMessageNumber(), messageFromDBCallback);
+            Diplomski.getDatabase().loadSingleMessage(result.getMessageNumber(),
+                    result.getPath(), messageFromDBCallback);
         }
     };
 

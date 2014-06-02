@@ -56,6 +56,7 @@ public class MessageList extends ResizeComposite {
     @UiField FlexTable header;
     @UiField FlexTable table;
     @UiField SelectionStyle rowSelectionStyle;
+    NavigationBar navBar;
 
     public void setParent(Webmail parent) {
         this.parent = parent;
@@ -72,6 +73,8 @@ public class MessageList extends ResizeComposite {
         if (currentMessages != null) {
             currentMessages.clear();
         }
+
+        navBar.reset();
     }
 
     /**
@@ -79,6 +82,8 @@ public class MessageList extends ResizeComposite {
      * emails. Also creates the images that will be used as 'read' flags.
      */
     private void initTable() {
+
+        navBar = new NavigationBar(this);
 
         // Initialize the header.
         header.getColumnFormatter().setWidth(0, columnDimensions[0]);
@@ -89,7 +94,7 @@ public class MessageList extends ResizeComposite {
         header.setText(0, 1, "Date");
         header.setText(0, 2, "Subject");
         header.setText(0, 3, "Navigation");
-        // header.setWidget(0, 3, navBar);
+        header.setWidget(0, 3, navBar);
         header.getCellFormatter().setHorizontalAlignment(0, 3, HasHorizontalAlignment.ALIGN_RIGHT);
 
         // Initialize the table.
@@ -206,6 +211,13 @@ public class MessageList extends ResizeComposite {
 
             i++;
         }
+
+        int total = parent.folders.getTotalMessageCount();
+        int start = currentMessages.get(9).getMessageNumber();
+        int end = currentMessages.get(0).getMessageNumber();
+
+        // update navigation bar
+        navBar.setNumbers(start, end, total);
     }
 
     private void selectRow (int row) {
@@ -223,7 +235,8 @@ public class MessageList extends ResizeComposite {
 
         // mark it in the local database
         if (!selectedMessage.isRead()) {
-            Diplomski.getDatabase().setReadMessage(true, selectedMessage.getMessageNumber(), new ListCallback<GenericRow>() {
+            Diplomski.getDatabase().setReadMessage(true, selectedMessage.getMessageNumber(),
+                    selectedMessage.getPath(), new ListCallback<GenericRow>() {
                 @Override
                 public void onSuccess(List<GenericRow> rowIds) {
                     Diplomski.displayError("Read flag for selected message successfuly written in local database!");
@@ -279,8 +292,11 @@ public class MessageList extends ResizeComposite {
 
     public void refresh(String mode, Folder f) {
 
-        startIndex = f.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT;
-        int lastIndex = startIndex + VISIBLE_EMAIL_COUNT;
+        if (startIndex == 0) {
+            startIndex = f.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT + 1;
+        }
+
+        int lastIndex = startIndex + VISIBLE_EMAIL_COUNT - 1;
 
         reset();
 
@@ -289,9 +305,20 @@ public class MessageList extends ResizeComposite {
             Diplomski.gmailService.getMessagesForPath(parent.getUsername(), f.getPath(),
                     startIndex, lastIndex, messageListCallback);
         } else {
-            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, messagesFromDBCallback);
+            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, f.getPath(), messagesFromDBCallback);
         }
+    }
 
+    public void loadNewerMessages() {
+        startIndex += VISIBLE_EMAIL_COUNT;
+
+        refresh(parent.getMode(), parent.folders.getSelectedFolder());
+    }
+
+    public void loadOlderMessages() {
+        startIndex -= VISIBLE_EMAIL_COUNT;
+
+        refresh(parent.getMode(), parent.folders.getSelectedFolder());
     }
 
     AsyncCallback< ArrayList<Message> > messageListCallback = new AsyncCallback<ArrayList<Message>>() {
