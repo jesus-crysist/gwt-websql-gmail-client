@@ -37,11 +37,6 @@ public class MessageComparator implements Comparator<Message> {
     }
 
     @Override
-    public <U extends Comparable<? super U>> Comparator<Message> thenComparing(Function<? super Message, ? extends U> keyExtractor, Comparator<? super U> keyComparator) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public <U extends Comparable<? super U>> Comparator<Message> thenComparing(Function<? super Message, ? extends U> keyExtractor) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }

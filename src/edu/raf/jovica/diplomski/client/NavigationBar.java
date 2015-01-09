@@ -35,10 +35,10 @@ public class NavigationBar extends Composite {
         totalText.setText( String.valueOf(total) );
         fromToText.setText( start + "-" + end );
 
-        if (total == end) {
+        if (start == 1) {
             newerButton.setVisible(false);
             olderButton.setVisible(true);
-        } else if (start < MessageList.VISIBLE_EMAIL_COUNT) {
+        } else if (end == total - 1) {
             newerButton.setVisible(true);
             olderButton.setVisible(false);
         } else {

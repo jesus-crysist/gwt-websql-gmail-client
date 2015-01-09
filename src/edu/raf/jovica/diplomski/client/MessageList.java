@@ -51,6 +51,7 @@ public class MessageList extends ResizeComposite {
 
     protected Webmail parent;
     private ArrayList<Message> currentMessages;
+    private Folder selectedFolder;
     private int startIndex, selectedRow = -1;
 
     @UiField FlexTable header;
@@ -213,8 +214,8 @@ public class MessageList extends ResizeComposite {
         }
 
         int total = parent.folders.getTotalMessageCount();
-        int start = currentMessages.get(9).getMessageNumber();
-        int end = currentMessages.get(0).getMessageNumber();
+        int start = total - currentMessages.get(0).getMessageNumber() + 1;
+        int end = start + VISIBLE_EMAIL_COUNT - 1;
 
         // update navigation bar
         navBar.setNumbers(start, end, total);
@@ -292,8 +293,10 @@ public class MessageList extends ResizeComposite {
 
     public void refresh(String mode, Folder f) {
 
-        if (startIndex == 0) {
-            startIndex = f.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT + 1;
+        if (!f.equals(selectedFolder)) {
+            selectedFolder = f;
+
+            startIndex = selectedFolder.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT + 1;
         }
 
         int lastIndex = startIndex + VISIBLE_EMAIL_COUNT - 1;
@@ -302,10 +305,10 @@ public class MessageList extends ResizeComposite {
 
         if (mode.equals(Diplomski.ONLINE_MODE)) {
 
-            Diplomski.gmailService.getMessagesForPath(parent.getUsername(), f.getPath(),
+            Diplomski.gmailService.getMessagesForPath(parent.getUsername(), selectedFolder.getPath(),
                     startIndex, lastIndex, messageListCallback);
         } else {
-            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, f.getPath(), messagesFromDBCallback);
+            Diplomski.getDatabase().loadMessages(startIndex, lastIndex, selectedFolder.getPath(), messagesFromDBCallback);
         }
     }
 
