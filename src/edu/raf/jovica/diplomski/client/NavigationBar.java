@@ -33,17 +33,30 @@ public class NavigationBar extends Composite {
     public void setNumbers(int start, int end, int total) {
 
         totalText.setText( String.valueOf(total) );
-        fromToText.setText( start + "-" + end );
 
-        if (start == 1) {
-            newerButton.setVisible(false);
-            olderButton.setVisible(true);
-        } else if (end == total - 1) {
-            newerButton.setVisible(true);
-            olderButton.setVisible(false);
+        if (end == total) {
+            fromToText.setText( String.valueOf(end) );
         } else {
+            fromToText.setText(start + "-" + end);
+        }
+
+        if (start > 1 && end != total) {
             newerButton.setVisible(true);
             olderButton.setVisible(true);
+        } else {
+            if (end != total) {
+                newerButton.setVisible(false);
+                olderButton.setVisible(true);
+            } else {
+                olderButton.setVisible(false);
+            }
+
+            if (start > 1) {
+                newerButton.setVisible(true);
+                olderButton.setVisible(false);
+            } else {
+                newerButton.setVisible(false);
+            }
         }
 
         rootElement.setVisible(total > 0);

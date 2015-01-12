@@ -152,15 +152,23 @@ public class MessageList extends ResizeComposite {
                     }
 
                     if (messagesToUpate.size() > 0) {
-                        Diplomski.getDatabase().updateMessagesReadFlag(messagesToUpate, new ListCallback<GenericRow>() {
-                            @Override
-                            public void onSuccess(List<GenericRow> rows) {
-                            }
 
-                            @Override
-                            public void onFailure(DataServiceException error) {
-                            }
-                        });
+                        messageIterator = messagesToUpate.iterator();
+
+                        while (messageIterator.hasNext()) {
+
+                            m = messageIterator.next();
+
+                            Diplomski.getDatabase().setReadMessage(m.isRead(), m.getMessageNumber(), m.getPath(), new ListCallback<GenericRow>() {
+                                @Override
+                                public void onSuccess(List<GenericRow> rows) {
+                                }
+
+                                @Override
+                                public void onFailure(DataServiceException error) {
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -204,8 +212,12 @@ public class MessageList extends ResizeComposite {
 
             Element rowElement = table.getRowFormatter().getElement(i);
 
+            System.out.println("Client  msg " + msg.getMessageNumber() + " is read: " + msg.isRead());
+
             if (!msg.isRead()) {
                 rowElement.getStyle().setFontWeight(Style.FontWeight.BOLD);
+            } else {
+                rowElement.getStyle().setFontWeight(Style.FontWeight.NORMAL);
             }
 
             rowElement.setAttribute("data-id", String.valueOf(msg.getId()));
@@ -213,9 +225,17 @@ public class MessageList extends ResizeComposite {
             i++;
         }
 
-        int total = parent.folders.getTotalMessageCount();
-        int start = total - currentMessages.get(0).getMessageNumber() + 1;
+        int total = selectedFolder.getTotalMessagesCount();
+        int start = total - currentMessages.get(0).getMessageNumber();
         int end = start + VISIBLE_EMAIL_COUNT - 1;
+
+        if (start == 0) {
+            start = 1;
+        }
+
+        if (total < VISIBLE_EMAIL_COUNT) {
+            end = currentMessages.get(0).getMessageNumber();
+        }
 
         // update navigation bar
         navBar.setNumbers(start, end, total);
@@ -296,12 +316,13 @@ public class MessageList extends ResizeComposite {
         if (!f.equals(selectedFolder)) {
             selectedFolder = f;
 
-            startIndex = selectedFolder.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT + 1;
+            startIndex = selectedFolder.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT;
         }
 
         int lastIndex = startIndex + VISIBLE_EMAIL_COUNT - 1;
 
         reset();
+        parent.messageDetails.reset();
 
         if (mode.equals(Diplomski.ONLINE_MODE)) {
 

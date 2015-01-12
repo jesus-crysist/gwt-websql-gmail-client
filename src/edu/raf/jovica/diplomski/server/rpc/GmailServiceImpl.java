@@ -64,6 +64,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
     @Override
     public String logout(String username) {
+
         loggedInStores.remove(username);
 
         return username;
@@ -77,6 +78,10 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
         try {
 
             GmailSSLStore store = loggedInStores.get(username);
+
+            if (!store.isConnected()) {
+                store.connect();
+            }
 
             javax.mail.Folder root = store.getFolder(path);
 
@@ -138,9 +143,16 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             GmailSSLStore store = loggedInStores.get(username);
 
+            if (!store.isConnected()) {
+                store.connect();
+            }
+
             GmailFolder folder = (GmailFolder) store.getFolder(path);
 
-            // TODO: from and to are not correct values!!!
+            if (store != null && store.isConnected()) {
+                store.close();
+            }
+
             return getMessages(folder, from, to);
 
         } catch (MessagingException e) {
@@ -156,6 +168,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
     private ArrayList<Message> getMessages(GmailFolder folder, int from, int to) throws MessagingException, IOException {
 
         ArrayList<Message> messages = new ArrayList<Message>();
+        javax.mail.Message[] gmailMessages = null;
 
         FetchProfile profile = new FetchProfile();
         profile.add(GmailFolder.FetchProfileItem.ENVELOPE);
@@ -166,7 +179,11 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             to = folder.getMessageCount();
         }
 
-        javax.mail.Message[] gmailMessages = folder.getMessages(from,  to);
+        if (from > 0) {
+            gmailMessages = folder.getMessages(from, to);
+        } else {
+            gmailMessages = folder.getMessages();
+        }
 
         folder.fetch(gmailMessages, profile);
 
@@ -196,6 +213,8 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             msg.setRead(gmailMsg.isSet(Flags.Flag.SEEN));
             msg.setPath(folder.getFullName());
             msg.setMessageNumber(gmailMsg.getMessageNumber());
+
+            System.out.println("Server msg " + gmailMsg.getMessageNumber() + " is read: " + gmailMsg.getFlags().contains(Flags.Flag.SEEN) + ", " + gmailMsg.isSet(Flags.Flag.SEEN));
 
             // Getting message body
             StringBuilder sb = new StringBuilder();
@@ -240,6 +259,10 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             GmailSSLStore store = loggedInStores.get(username);
 
+            if (!store.isConnected()) {
+                store.connect();
+            }
+
             GmailFolder folder = (GmailFolder) store.getFolder(msg.getPath());
 
             folder.open(javax.mail.Folder.READ_WRITE);
@@ -257,6 +280,10 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             if (folder != null && folder.isOpen()) {
                 folder.close(true);
+            }
+
+            if (store != null && store.isConnected()) {
+                store.close();
             }
 
             return msg;
