@@ -68,9 +68,6 @@ public interface LocalSQL extends DataService {
     @Select(sql="SELECT * FROM message WHERE msgId IN({messageIds})")
     void getMessagesByIds(List<Integer> messageIds, ListCallback<GenericRow> callback);
 
-    @Update(sql="UPDATE message SET isRead={_.isRead()} WHERE msgId={_.getMessageNumber()} AND path={_.getPath()}", foreach="messages")
-    void updateMessagesReadFlag(Collection<Message> messages, ListCallback<GenericRow> callback);
-
     @Select(sql="SELECT * FROM message WHERE msgId BETWEEN {startIndex} AND {lastIndex} AND path={path} ORDER BY path")
     void loadMessages(int startIndex, int lastIndex, String path, ListCallback<GenericRow> callback);
 

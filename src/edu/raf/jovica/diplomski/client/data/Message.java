@@ -108,6 +108,10 @@ public class Message implements IsSerializable {
         return read;
     }
 
+    public int isReadInt() {
+        return read ? 1 : 0;
+    }
+
     public void setRead(boolean read) {
         this.read = read;
     }
