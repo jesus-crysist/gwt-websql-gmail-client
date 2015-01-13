@@ -103,7 +103,7 @@ public class MessageDetails extends ResizeComposite {
             m.setSentDate(row.getInt("sentDate"));
             m.setReceivedDate(row.getInt("receivedDate"));
             m.setPath(row.getString("path"));
-            m.setRead(row.getBoolean("isRead"));
+            m.setRead(row.getInt("read"));
 
             m.setBody(row.getString("body"));
 

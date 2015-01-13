@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.*;
 import edu.raf.jovica.diplomski.client.data.Folder;
 import edu.raf.jovica.diplomski.client.data.Message;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,7 @@ public class MessageList extends ResizeComposite {
     }
 
     static final int VISIBLE_EMAIL_COUNT = 10;
-    private final String[] columnDimensions = new String[] { "256px", "192px", "", "456px"  };
+    private final String[] columnDimensions = new String[] { "256px", "202px", "", "456px"  };
 
     public MessageList() {
 
@@ -92,7 +93,7 @@ public class MessageList extends ResizeComposite {
         header.getColumnFormatter().setWidth(3, columnDimensions[3]);
 
         header.setText(0, 0, "Sender");
-        header.setText(0, 1, "Date");
+        header.setText(0, 1, "Received Date");
         header.setText(0, 2, "Subject");
         header.setText(0, 3, "Navigation");
         header.setWidget(0, 3, navBar);
@@ -139,7 +140,7 @@ public class MessageList extends ResizeComposite {
 
                             if (m.getMessageNumber() == row.getInt("msgId")) {
 
-                                if (m.isRead() != row.getBoolean("isRead")) {
+                                if (m.getRead() != row.getInt("read")) {
                                     messagesToUpate.add(m);
                                 }
                                 toAdd = false;
@@ -159,7 +160,7 @@ public class MessageList extends ResizeComposite {
 
                             m = messageIterator.next();
 
-                            Diplomski.getDatabase().setReadMessage(m.isRead(), m.getMessageNumber(), m.getPath(), new ListCallback<GenericRow>() {
+                            Diplomski.getDatabase().setReadMessage(m.getRead(), m.getMessageNumber(), m.getPath(), new ListCallback<GenericRow>() {
                                 @Override
                                 public void onSuccess(List<GenericRow> rows) {
                                 }
@@ -202,17 +203,29 @@ public class MessageList extends ResizeComposite {
         ArrayList<Message> messages = currentMessages;
         int i = 0;
 
+        if (parent.getMode().equals(Diplomski.OFFLINE_MODE) && messages.size() == 0) {
+            table.setText(0, 0, "You don't have any data stored localy. Go log in to server to download it.");
+
+            Element rowElement = table.getRowFormatter().getElement(0);
+
+            rowElement.setAttribute("colspan", "3");
+            rowElement.getStyle().setFontSize(30, Style.Unit.PX);
+            rowElement.getStyle().setFontWeight(Style.FontWeight.BOLD);
+
+            return;
+        }
+
         for (final Message msg  : messages) {
+
+            java.util.Date receivedDate = new java.util.Date(msg.getReceivedDate() * 1000L);
 
             // Add a new row to the table, then set each of its columns to the
             // email's sender and subject values.
             table.setText(i, 0, msg.getSender());
-            table.setText(i, 1, Long.toString(msg.getReceivedDate()) );
+            table.setText(i, 1, receivedDate.toString() );
             table.setText(i, 2, msg.getSubject());
 
             Element rowElement = table.getRowFormatter().getElement(i);
-
-            System.out.println("Client  msg " + msg.getMessageNumber() + " is read: " + msg.isRead());
 
             if (!msg.isRead()) {
                 rowElement.getStyle().setFontWeight(Style.FontWeight.BOLD);
@@ -221,6 +234,7 @@ public class MessageList extends ResizeComposite {
             }
 
             rowElement.setAttribute("data-id", String.valueOf(msg.getId()));
+            rowElement.removeAttribute("colspan");
 
             i++;
         }
@@ -256,7 +270,7 @@ public class MessageList extends ResizeComposite {
 
         // mark it in the local database
         if (!selectedMessage.isRead()) {
-            Diplomski.getDatabase().setReadMessage(true, selectedMessage.getMessageNumber(),
+            Diplomski.getDatabase().setReadMessage(1, selectedMessage.getMessageNumber(),
                     selectedMessage.getPath(), new ListCallback<GenericRow>() {
                 @Override
                 public void onSuccess(List<GenericRow> rowIds) {
@@ -366,6 +380,10 @@ public class MessageList extends ResizeComposite {
         @Override
         public void onSuccess(List<GenericRow> result) {
 
+            if (currentMessages == null ) {
+                currentMessages = new ArrayList<Message>();
+            }
+
             for (final GenericRow row : result) {
 
                 Message m = new Message((long) row.getInt("id"));
@@ -376,7 +394,7 @@ public class MessageList extends ResizeComposite {
                 m.setSentDate(row.getInt("sentDate"));
                 m.setReceivedDate(row.getInt("receivedDate"));
                 m.setPath(row.getString("path"));
-                m.setRead(row.getBoolean("isRead"));
+                m.setRead(row.getInt("read"));
                 m.setBody(row.getString("body"));
 
                 currentMessages.add(m);

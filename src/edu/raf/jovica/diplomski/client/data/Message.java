@@ -35,7 +35,7 @@ public class Message implements IsSerializable {
     private ArrayList<String> recipients;
     private Date sentDate;
     private Date receivedDate;
-    private boolean read;
+    private int read;
     private String path;
     private String body;
     private String error;
@@ -105,15 +105,19 @@ public class Message implements IsSerializable {
     }
 
     public boolean isRead() {
+        return read == 1;
+    }
+
+    public int getRead() {
         return read;
     }
 
-    public int isReadInt() {
-        return read ? 1 : 0;
+    public void setRead(int read) {
+        this.read = read;
     }
 
-    public void setRead(boolean read) {
-        this.read = read;
+    public void setReadBool(boolean read) {
+        this.read = read ? 1 : 0;
     }
 
     public String getPath() {

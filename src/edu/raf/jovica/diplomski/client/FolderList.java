@@ -270,11 +270,16 @@ public class FolderList extends Composite {
         @Override
         public void onSelection(SelectionEvent<TreeItem> event) {
 
+            TreeItem item = event.getSelectedItem();
+
+            if (selectedItem == item) {
+                return;
+            }
+
             if (selectedItem != null) {
                 selectedItem.getElement().getFirstChildElement().getStyle().setBackgroundColor("transparent");
             }
 
-            TreeItem item = event.getSelectedItem();
             Element el = item.getElement();
 
             item.setState(true);

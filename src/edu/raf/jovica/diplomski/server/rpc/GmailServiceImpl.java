@@ -210,11 +210,9 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             msg.setSentDate(gmailMsg.getSentDate());
             msg.setReceivedDate(gmailMsg.getReceivedDate());
-            msg.setRead(gmailMsg.isSet(Flags.Flag.SEEN));
+            msg.setReadBool(gmailMsg.isSet(Flags.Flag.SEEN));
             msg.setPath(folder.getFullName());
             msg.setMessageNumber(gmailMsg.getMessageNumber());
-
-            System.out.println("Server msg " + gmailMsg.getMessageNumber() + " is read: " + gmailMsg.getFlags().contains(Flags.Flag.SEEN) + ", " + gmailMsg.isSet(Flags.Flag.SEEN));
 
             // Getting message body
             StringBuilder sb = new StringBuilder();
@@ -276,7 +274,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
             gmailMsg.setFlag(Flags.Flag.SEEN, true);
 
             // set read flag in message object
-            msg.setRead( gmailMsg.getFlags().contains(Flags.Flag.SEEN) );
+            msg.setReadBool( gmailMsg.getFlags().contains(Flags.Flag.SEEN) );
 
             if (folder != null && folder.isOpen()) {
                 folder.close(true);
