@@ -206,11 +206,16 @@ public class MessageList extends ResizeComposite {
         if (parent.getMode().equals(Diplomski.OFFLINE_MODE) && messages.size() == 0) {
             table.setText(0, 0, "You don't have any data stored localy. Go log in to server to download it.");
 
+            table.getCellFormatter().getElement(0, 0).setAttribute("colspan", "3");
+
             Element rowElement = table.getRowFormatter().getElement(0);
 
-            rowElement.setAttribute("colspan", "3");
             rowElement.getStyle().setFontSize(30, Style.Unit.PX);
             rowElement.getStyle().setFontWeight(Style.FontWeight.BOLD);
+
+            int total = selectedFolder.getTotalMessagesCount();
+
+            navBar.setNumbers(total, total, total);
 
             return;
         }
@@ -234,13 +239,15 @@ public class MessageList extends ResizeComposite {
             }
 
             rowElement.setAttribute("data-id", String.valueOf(msg.getId()));
-            rowElement.removeAttribute("colspan");
 
             i++;
         }
 
+        // remove "colspan" attribute from first cell
+        table.getCellFormatter().getElement(0, 0).removeAttribute("colspan");
+
         int total = selectedFolder.getTotalMessagesCount();
-        int start = total - currentMessages.get(0).getMessageNumber();
+        int start = total - currentMessages.get(0).getMessageNumber() + 1;
         int end = start + VISIBLE_EMAIL_COUNT - 1;
 
         if (start == 0) {
@@ -330,7 +337,7 @@ public class MessageList extends ResizeComposite {
         if (!f.equals(selectedFolder)) {
             selectedFolder = f;
 
-            startIndex = selectedFolder.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT;
+            startIndex = selectedFolder.getTotalMessagesCount() - VISIBLE_EMAIL_COUNT + 1;
         }
 
         int lastIndex = startIndex + VISIBLE_EMAIL_COUNT - 1;
