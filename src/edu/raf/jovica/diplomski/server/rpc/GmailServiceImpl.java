@@ -204,8 +204,10 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             Address[] recipients = gmailMsg.getRecipients(javax.mail.Message.RecipientType.TO);
 
-            for (Address recipient : recipients) {
-                msg.addRecipient(recipient.toString());
+            if (recipients != null && recipients.length > 0) { // messages in draft folder don't have recipients
+                for (Address recipient : recipients) {
+                    msg.addRecipient(recipient.toString());
+                }
             }
 
             msg.setSentDate(gmailMsg.getSentDate());
