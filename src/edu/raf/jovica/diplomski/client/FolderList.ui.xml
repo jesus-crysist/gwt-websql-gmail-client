@@ -1,6 +1,42 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
-    <g:Tree ui:field="folderTree"></g:Tree>
+    <ui:style>
+        .newMail {
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+    </ui:style>
+
+    <g:DockLayoutPanel unit="PX">
+
+        <g:north size="35">
+            <g:Button text="New mail" ui:field="newMailButton" width="95%" styleName="{style.newMail}"></g:Button>
+        </g:north>
+
+        <g:center>
+            <g:Tree ui:field="folderTree"></g:Tree>
+        </g:center>
+    </g:DockLayoutPanel>
 
 </ui:UiBinder>

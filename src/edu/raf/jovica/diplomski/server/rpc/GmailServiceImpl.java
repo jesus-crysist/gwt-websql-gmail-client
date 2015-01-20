@@ -4,20 +4,21 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 import com.sun.mail.gimap.GmailSSLStore;
+import com.sun.mail.gimap.GmailStore;
 import edu.raf.jovica.diplomski.client.data.Folder;
 import edu.raf.jovica.diplomski.client.data.Message;
 import edu.raf.jovica.diplomski.client.rpc.GmailService;
 import edu.raf.jovica.diplomski.util.MessageComparator;
 
 import javax.mail.*;
+import javax.mail.event.TransportEvent;
+import javax.mail.event.TransportListener;
 import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,13 +29,20 @@ import java.util.Properties;
  */
 public class GmailServiceImpl extends RemoteServiceServlet implements GmailService {
 
-    private Map<String, GmailSSLStore> loggedInStores = new HashMap<String, GmailSSLStore>();
+    private Map<String, GmailSessionStore> loggedInStores = new HashMap<String, GmailSessionStore>();
 
     @Override
     public String login(String username, String password) {
 
+        String gmailSmtpPort = "587";
+
         Properties props = System.getProperties();
         props.setProperty("mail.store.protocol", "gimaps");
+        // for sending mail
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", gmailSmtpPort);
 
         try {
 
@@ -42,9 +50,11 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
             GmailSSLStore store = (GmailSSLStore) mailSession.getStore("gimaps");
 
-            store.connect(username, password);
+            PasswordAuthentication credentials = new PasswordAuthentication(username, password);
 
-            loggedInStores.put(username, store);
+            store.connect(credentials.getUserName(), credentials.getPassword());
+
+            loggedInStores.put(username, new GmailSessionStore(mailSession, store, credentials));
 
             return username;
 
@@ -77,7 +87,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         try {
 
-            GmailSSLStore store = loggedInStores.get(username);
+            GmailSSLStore store = (GmailSSLStore) loggedInStores.get(username).getStore();
 
             if (!store.isConnected()) {
                 store.connect();
@@ -141,7 +151,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         try {
 
-            GmailSSLStore store = loggedInStores.get(username);
+            GmailSSLStore store = (GmailSSLStore) loggedInStores.get(username).getStore();
 
             if (!store.isConnected()) {
                 store.connect();
@@ -257,7 +267,7 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
         try {
 
-            GmailSSLStore store = loggedInStores.get(username);
+            GmailSSLStore store = (GmailSSLStore) loggedInStores.get(username).getStore();
 
             if (!store.isConnected()) {
                 store.connect();
@@ -327,6 +337,62 @@ public class GmailServiceImpl extends RemoteServiceServlet implements GmailServi
 
                 messagePartToString(mp.getBodyPart(x), sb);
             }
+        }
+    }
+
+    /**
+     * Send message via SMTP protocol.
+     * @param username User that's trying to send a mail.
+     * @param msg Message with data to be sent
+     * @return Message filled with data
+     */
+    public Message sendMessage(String username, Message msg) {
+
+        Session session = loggedInStores.get(username).getSession();
+        PasswordAuthentication credentials = loggedInStores.get(username).getCredentials();
+
+        try {
+
+            MimeMessage msgToSend = new MimeMessage(session);
+
+            msgToSend.addRecipients(javax.mail.Message.RecipientType.TO, msg.getRecipientsAsSingleString());
+            msgToSend.setSubject(msg.getSubject());
+            msgToSend.setText(msg.getBody());
+
+            Transport transport = session.getTransport("smtp");
+            transport.connect(credentials.getUserName(), credentials.getPassword());
+            transport.sendMessage(msgToSend, msgToSend.getAllRecipients());
+            transport.close();
+
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+
+        return msg;
+    }
+
+    private class GmailSessionStore {
+
+        private Session session;
+        private GmailStore store;
+        private PasswordAuthentication credentials;
+
+        public GmailSessionStore(Session session, GmailStore store, PasswordAuthentication credentials) {
+            this.session = session;
+            this.store = store;
+            this.credentials = credentials;
+        }
+
+        public Session getSession() {
+            return session;
+        }
+
+        public GmailStore getStore() {
+            return store;
+        }
+
+        public PasswordAuthentication getCredentials() {
+            return credentials;
         }
     }
 }

@@ -4,22 +4,23 @@ import com.google.code.gwt.database.client.GenericRow;
 import com.google.code.gwt.database.client.service.DataServiceException;
 import com.google.code.gwt.database.client.service.ListCallback;
 import com.google.code.gwt.database.client.service.RowIdListCallback;
-import com.google.code.gwt.database.client.util.StringUtils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Tree;
-import com.google.gwt.user.client.ui.TreeItem;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import edu.raf.jovica.diplomski.client.data.Folder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,7 +38,9 @@ public class FolderList extends Composite {
     private TreeItem rootFolder;
     private TreeItem selectedItem;
     private ArrayList<Folder> folderList;
+    private NewMailDialog newMailDialog;
 
+    @UiField Button newMailButton;
     @UiField Tree folderTree;
 
     public FolderList() {
@@ -221,6 +224,25 @@ public class FolderList extends Composite {
         this.parent = parent;
     }
 
+    public void setMode(String mode) {
+
+        if (mode.equals(Diplomski.ONLINE_MODE)) {
+            newMailDialog = new NewMailDialog();
+
+            RootPanel.get().add(newMailDialog);
+
+            newMailDialog.setParent(parent);
+        } else {
+            newMailButton.setVisible(false);
+
+            if (newMailDialog != null) {
+                RootPanel.get().remove(newMailDialog);
+
+                newMailDialog = null;
+            }
+        }
+    }
+
     public Folder getSelectedFolder() {
         return folderList.get( Integer.parseInt(selectedItem.getElement().getAttribute("data-index")) );
     }
@@ -374,5 +396,10 @@ public class FolderList extends Composite {
         }
 
         parent.addChild(child);
+    }
+
+    @UiHandler("newMailButton")
+    public void onNewMailButtonClick (ClickEvent event) {
+        newMailDialog.center();
     }
 }

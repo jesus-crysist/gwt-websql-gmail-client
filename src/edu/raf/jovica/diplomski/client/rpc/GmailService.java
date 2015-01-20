@@ -23,6 +23,7 @@ public interface GmailService extends RemoteService {
     public ArrayList<Folder> getFolderList(String username, String path);
     public ArrayList<Message> getMessagesForPath(String username, String path, int from, int to);
     public Message setMessageReadFlag(String username, Message msg);
+    public Message sendMessage(String username, Message msg);
 
     /**
      * Utility/Convenience class.

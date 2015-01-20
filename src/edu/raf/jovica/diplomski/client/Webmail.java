@@ -65,6 +65,8 @@ public class Webmail extends Composite {
 
     public void setMode(String mode) {
         this.mode = mode;
+
+        folders.setMode(mode);
     }
 
     public void setUsername(String username) {
